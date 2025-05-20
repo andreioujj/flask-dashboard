@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for, flash
 from app.models import Category, Product, Sale
 from sqlalchemy import func
 from datetime import datetime, timedelta
@@ -9,10 +9,59 @@ import numpy as np
 from app.price_trend_models import HoltWintersModel
 from app.seasonal_demand_models import ProphetSeasonalModel
 import pandas as pd
+from functools import wraps
 
 main = Blueprint('main', __name__)
 
+# Default credentials
+DEFAULT_USERNAME = "admin"
+DEFAULT_PASSWORD = "admin123"
+
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@main.before_request
+def before_request():
+    # List of routes that don't require authentication
+    public_routes = ['login', 'static']
+    
+    # Check if the route is public
+    if not any(route in request.endpoint for route in public_routes):
+        if 'logged_in' not in session:
+            return redirect(url_for('main.login'))
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    # If user is already logged in, redirect to dashboard
+    if 'logged_in' in session:
+        return redirect(url_for('main.dashboard'))
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == DEFAULT_USERNAME and password == DEFAULT_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('main.dashboard'))
+        else:
+            flash('Invalid username or password')
+    
+    return render_template('login.html')
+
+@main.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('You have been logged out successfully')
+    return redirect(url_for('main.login'))
+
 @main.route('/')
+@login_required
 def dashboard():
     # Get total products count
     total_products = Product.query.count()
@@ -34,6 +83,7 @@ def dashboard():
                          recent_sales=recent_sales)
 
 @main.route('/trends')
+@login_required
 def trends():
     return render_template('trends.html')
 

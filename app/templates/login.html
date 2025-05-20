@@ -1,0 +1,123 @@
+{% extends "auth_base.html" %}
+
+{% block content %}
+<div class="login-bg">
+    <div class="login-card-container">
+        <div class="login-card glass-card">
+            <div class="text-center mb-4">
+                <div class="avatar-circle mb-3">
+                    <i class="fas fa-user fa-2x"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Yooo, welcome back!</h3>
+                <div class="text-white small mb-3">Login to your account</div>
+            </div>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form method="POST" action="{{ url_for('main.login') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label text-white">Username</label>
+                    <input type="text" class="form-control text-white login-input" id="username" name="username" placeholder="Username" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label text-white">Password</label>
+                    <input type="password" class="form-control text-white login-input" id="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-light btn-login w-100 mb-2">Login</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-bg {
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 60% 40%, rgba(60,60,60,0.18) 0%, rgba(18,18,18,1) 80%);
+}
+.login-card-container {
+    position: relative;
+    width: 100vw;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-back {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    color: #b0b0b0;
+    z-index: 2;
+    font-size: 1.2rem;
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+.glass-card {
+    background: rgba(30, 30, 30, 0.85);
+    border-radius: 22px;
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(60,60,60,0.25);
+    padding: 48px 36px 36px 36px;
+    width: 100%;
+    max-width: 400px;
+}
+.avatar-circle {
+    width: 56px;
+    height: 56px;
+    background: rgba(60,60,60,0.18);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px auto;
+    color: #b0b0b0;
+}
+.login-input {
+    background: #23232b;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 12px 16px;
+    transition: border-color 0.2s;
+}
+.login-input:focus {
+    border-color: #0d6efd;
+    background: #23232b;
+    color: #fff;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+.btn-login {
+    background: #fff;
+    color: #23232b;
+    font-weight: 600;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    padding: 10px 0;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+    border: none;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-login:hover, .btn-login:focus {
+    background: #e0e0e0;
+    color: #121212;
+}
+.alert {
+    border-radius: 8px;
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+}
+</style>
+{% endblock %} 
