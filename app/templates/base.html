@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Flask Dashboard{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        html, body {
+            height: 100%;
+        }
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            min-height: 100vh;
+            height: 100%;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #0b0b0e;
+            padding: 20px 0 20px 0;
+            border-right: 1px solid #333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1030;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar .navbar-brand {
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .sidebar .nav {
+            width: 100%;
+        }
+        .sidebar .nav-link {
+            color: #e0e0e0;
+            padding: 12px 30px;
+            border-radius: 0 20px 20px 0;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            transition: background 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar .nav-link.active, .sidebar .nav-link:focus {
+            background-color: #414242;
+            color: #fff;
+            font-weight: bold;
+        }
+        .sidebar .nav-link:hover {
+            color: #716f6f;
+            background-color: #23272b;
+        }
+        .main-content {
+            flex: 1;
+            padding: 32px 32px 32px 282px; /* left padding = sidebar width + spacing */
+            width: 100%;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+        .card-header {
+            background-color: #2d2d2d;
+            border-bottom: 1px solid #333;
+        }
+        .list-group-item {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            color: #e0e0e0;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .btn-outline-primary {
+            color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100vw;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                border-right: none;
+                border-bottom: 1px solid #333;
+                padding: 10px 0;
+            }
+            .sidebar .nav {
+                flex-direction: row;
+                justify-content: center;
+            }
+            .sidebar .nav-link {
+                border-radius: 20px 20px 0 0;
+                margin-bottom: 0;
+                margin-right: 8px;
+                padding: 10px 16px;
+            }
+            .main-content {
+                padding: 90px 8px 8px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-chart-line me-2"></i>Flask Dashboard
+        </a>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+                    <i class="fas fa-home"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path.startswith('/trends') %}active{% endif %}" href="/trends">
+                    <i class="fas fa-chart-line"></i>Trends
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path.startswith('/descriptive') %}active{% endif %}" href="/descriptive">
+                    <i class="fas fa-chart-bar"></i>Descriptive Analytics
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path.startswith('/predictive') %}active{% endif %}" href="/predictive">
+                    <i class="fas fa-brain"></i>Predictive Analytics
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path.startswith('/tables') %}active{% endif %}" href="/tables">
+                    <i class="fas fa-table"></i>Tables
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

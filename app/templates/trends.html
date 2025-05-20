@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}Trend Analysis - Flask Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-light mb-4">Trend Analysis</h2>
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group" role="group" id="periodButtons">
+                <button type="button" class="btn btn-primary active" data-period="monthly" onclick="loadTrends('monthly')">Monthly</button>
+                <button type="button" class="btn btn-outline-primary" data-period="quarterly" onclick="loadTrends('quarterly')">Quarterly</button>
+                <button type="button" class="btn btn-outline-primary" data-period="yearly" onclick="loadTrends('yearly')">Yearly</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card bg-dark text-light">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sales Volume Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesVolumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card bg-dark text-light">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Average Product Price Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="avgPriceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-dark text-light">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top-Selling Product Categories Over Time</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let salesVolumeChart, avgPriceChart, categoriesChart;
+    let currentPeriod = 'monthly'; // Track current period
+
+    function updateButtonStates(activePeriod) {
+        // Remove active class from all buttons
+        document.querySelectorAll('#periodButtons .btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+        });
+
+        // Add active class to selected button
+        const activeButton = document.querySelector(`#periodButtons [data-period="${activePeriod}"]`);
+        activeButton.classList.add('active');
+        activeButton.classList.remove('btn-outline-primary');
+        activeButton.classList.add('btn-primary');
+    }
+
+    function createCharts(data) {
+        // Sales Volume Chart
+        if (salesVolumeChart) salesVolumeChart.destroy();
+        salesVolumeChart = new Chart(document.getElementById('salesVolumeChart'), {
+            type: 'line',
+            data: {
+                labels: data.sales_volume.map(item => item.period),
+                datasets: [{
+                    label: 'Sales Volume',
+                    data: data.sales_volume.map(item => item.quantity),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Average Price Chart
+        if (avgPriceChart) avgPriceChart.destroy();
+        avgPriceChart = new Chart(document.getElementById('avgPriceChart'), {
+            type: 'line',
+            data: {
+                labels: data.avg_price.map(item => item.period),
+                datasets: [{
+                    label: 'Average Price',
+                    data: data.avg_price.map(item => item.price),
+                    borderColor: 'rgb(153, 102, 255)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Top-Selling Categories Chart
+        if (categoriesChart) categoriesChart.destroy();
+        const categories = [...new Set(data.top_categories.map(item => item.category))];
+        const periods = [...new Set(data.top_categories.map(item => item.period))];
+        const datasets = categories.map((category, idx) => {
+            const color = `hsl(${idx * 360 / categories.length}, 70%, 50%)`;
+            return {
+                label: category,
+                data: periods.map(period => {
+                    const found = data.top_categories.find(item => item.category === category && item.period === period);
+                    return found ? found.quantity : 0;
+                }),
+                borderColor: color,
+                backgroundColor: color,
+                tension: 0.1
+            };
+        });
+        categoriesChart = new Chart(document.getElementById('categoriesChart'), {
+            type: 'line',
+            data: {
+                labels: periods,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'white'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function loadTrends(period) {
+        currentPeriod = period;
+        updateButtonStates(period);
+        
+        fetch(`/api/trends/${period}`)
+            .then(response => response.json())
+            .then(data => createCharts(data))
+            .catch(error => console.error('Error loading trends:', error));
+    }
+
+    // Load monthly trends by default
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTrends('monthly');
+    });
+</script>
+{% endblock %} 

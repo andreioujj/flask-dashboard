@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}Descriptive Analytics - Flask Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-light">Descriptive Analytics</h2>
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 text-light">Total & Monthly Product Listings</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="productListingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 text-light">Top-Selling Products by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 text-light">Sales Volume Over Time</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="updateSalesVolume('monthly')">Monthly</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="updateSalesVolume('quarterly')">Quarterly</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="updateSalesVolume('yearly')">Yearly</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesVolumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0 text-light">Average Product Prices by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="avgPriceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Chart instances
+let productListingsChart;
+let topProductsChart;
+let salesVolumeChart;
+let avgPriceChart;
+
+// Common chart options
+const commonOptions = {
+    responsive: true,
+    plugins: {
+        legend: {
+            labels: {
+                color: 'white'
+            }
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+                color: 'white'
+            }
+        },
+        x: {
+            grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+                color: 'white'
+            }
+        }
+    }
+};
+
+// Initialize Product Listings Chart
+function initProductListingsChart() {
+    const ctx = document.getElementById('productListingsChart').getContext('2d');
+    productListingsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Monthly Products',
+                data: [],
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 1
+            }]
+        },
+        options: commonOptions
+    });
+}
+
+// Initialize Top Products Chart
+function initTopProductsChart() {
+    const ctx = document.getElementById('topProductsChart').getContext('2d');
+    topProductsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sales Volume',
+                data: [],
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                borderColor: 'rgb(153, 102, 255)',
+                borderWidth: 1
+            }]
+        },
+        options: commonOptions
+    });
+}
+
+// Initialize Sales Volume Chart
+function initSalesVolumeChart() {
+    const ctx = document.getElementById('salesVolumeChart').getContext('2d');
+    salesVolumeChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sales Volume',
+                data: [],
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: commonOptions
+    });
+}
+
+// Initialize Average Prices Chart
+function initAvgPriceChart() {
+    const ctx = document.getElementById('avgPriceChart').getContext('2d');
+    avgPriceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Average Price',
+                data: [],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }]
+        },
+        options: commonOptions
+    });
+}
+
+// Update functions
+function updateProductListings() {
+    fetch('/api/descriptive/product_listings')
+        .then(response => response.json())
+        .then(data => {
+            productListingsChart.data.labels = data.labels;
+            productListingsChart.data.datasets[0].data = data.datasets[0].data;
+            productListingsChart.update();
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function updateTopProducts() {
+    fetch('/api/descriptive/top_products')
+        .then(response => response.json())
+        .then(data => {
+            topProductsChart.data.labels = data.labels;
+            topProductsChart.data.datasets[0].data = data.datasets[0].data;
+            topProductsChart.update();
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function updateSalesVolume(period) {
+    fetch(`/api/descriptive/sales_volume/${period}`)
+        .then(response => response.json())
+        .then(data => {
+            salesVolumeChart.data.labels = data.labels;
+            salesVolumeChart.data.datasets[0].data = data.datasets[0].data;
+            salesVolumeChart.update();
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function updateAvgPrices() {
+    fetch('/api/descriptive/avg_prices')
+        .then(response => response.json())
+        .then(data => {
+            avgPriceChart.data.labels = data.labels;
+            avgPriceChart.data.datasets[0].data = data.datasets[0].data;
+            avgPriceChart.update();
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Initialize all charts when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initProductListingsChart();
+    initTopProductsChart();
+    initSalesVolumeChart();
+    initAvgPriceChart();
+    
+    // Load initial data
+    updateProductListings();
+    updateTopProducts();
+    updateSalesVolume('monthly');  // Default to monthly view
+    updateAvgPrices();
+});
+</script>
+{% endblock %} 
